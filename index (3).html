@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CosmoKit Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8e8e8;
+            color: #5d5b6a;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background-color: #ffcad4;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6392;
+        }
+        #searchBar {
+            padding: 8px;
+            border-radius: 20px;
+            border: 2px solid #ffb3c6;
+            width: 200px;
+            text-align: center;
+        }
+        .cart {
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 320px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            transition: right 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+            text-align: left;
+            border-radius: 10px 0 0 10px;
+        }
+        .cart-modal.active {
+            right: 0;
+        }
+        .cart-modal .close-btn {
+            background-color: #ff6392;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+        }
+        .cart-item-info {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .cart-item .remove-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .cart-total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .products img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .products {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .product {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .products {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+.cart-item-info span {
+    display: block;
+    font-size: 14px;
+    color: #333;
+}
+    </style>
+    <script>
+        let cart = [];
+
+        function toggleCart() {
+            const cartModal = document.getElementById('cart-modal');
+            if (cartModal) {
+                cartModal.classList.toggle('active');
+            }
+        }
+
+        function addToCart(id, name, price, image) {
+    const index = cart.findIndex(item => item.id === id);
+    if (index !== -1) {
+        cart[index].quantity += 1;
+    } else {
+        cart.push({ id, name, price, image, quantity: 1 });
+    }
+    updateCart();
+}
+
+        function removeFromCart(id) {
+    const index = cart.findIndex(item => item.id === id);
+    if (index !== -1) {
+        if (cart[index].quantity > 1) {
+            cart[index].quantity -= 1;
+        } else {
+            cart.splice(index, 1);
+        }
+    }
+    updateCart();
+}
+
+        function updateCart() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            if (!cartItemsContainer || !cartCount || !cartTotal) return;
+            
+            cartItemsContainer.innerHTML = '';
+            let totalItems = 0;
+            let totalPrice = 0;
+            cart.forEach(item => {
+                totalItems += item.quantity;
+                totalPrice += item.price * item.quantity;
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('cart-item');
+                itemElement.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <div class="cart-item-info">
+                        <span>${item.name} (x${item.quantity})</span>
+                        <span>${item.price * item.quantity} PHP</span>
+                    </div>
+                    <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+                `;
+                cartItemsContainer.appendChild(itemElement);
+            });
+            cartCount.innerText = totalItems;
+            cartTotal.innerText = `Total: ${totalPrice} PHP`;
+        }
+        function checkout() {
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+    let receipt = "Thank you for your purchase!\n\nYour order summary:\n";
+    cart.forEach(item => {
+        receipt += `${item.name} (x${item.quantity}) - ${item.price * item.quantity} PHP\n`;
+    });
+    receipt += `\n ${document.getElementById('cart-total').textContent}`;
+    alert(receipt);
+    cart = [];
+    updateCart();
+}
+function filterProducts() {
+            const searchValue = document.getElementById("searchBar").value.toLowerCase();
+            const products = document.querySelectorAll(".product");
+            products.forEach(product => {
+                const productName = product.querySelector("h3").innerText.toLowerCase();
+                product.style.display = productName.includes(searchValue) ? "block" : "none";
+            });
+        }
+        window.onclick = function(event) {
+    const cartModal = document.getElementById("cart-modal");
+    if (event.target === cartModal) {
+        cartModal.classList.remove("active");
+    }
+};
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="https://i.ibb.co/4RQKj4Lk/logo.png" alt="CosmoKit Logo">
+                <span class="logo-text">CosmoKit Shop</span>
+            </div>
+            <input type="text" placeholder="Search products..." id="searchBar" onkeyup="filterProducts()">
+            <div class="cart" onclick="toggleCart()">🛒 <span id="cart-count">0</span></div>
+        </nav>
+    </header>
+    <h2>Welcome to CosmoKit Shop! Find the best stationery items here.</h2>
+    <div class="cart-modal" id="cart-modal">
+    <button class="close-btn" onclick="toggleCart()">Close</button>
+    <h3>Shopping Cart</h3>
+    <div id="cart-items"></div>
+    <div class="cart-total" id="cart-total">Total: 0 PHP</div>
+    <button onclick="checkout()">Checkout</button>
+</div>
+    <section class="products" id="product-list">
+        <div class="product">
+        <img src="https://images.unsplash.com/photo-1611079830811-865ff4428d17?q=80&w=1517&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Notepad">
+        <h3><a href="https://yourstore.com/notepad" target="_blank">Notepad</a></h3>
+        <p>25 PHP</p>
+        <button onclick="addToCart(1, 'Notepad', 25, 'https://images.unsplash.com/photo-1611079830811-865ff4428d17?q=80&w=1517&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">Add to Cart</button>
+    </div>
+        <div class="product">
+        <img src="https://p.globalsources.com/IMAGES/PDT/B1188458161/ballpoint-pens.jpg" alt="Ballpen">
+        <h3><a href="https://yourstore.com/ballpen" target="_blank">Ballpen</a></h3>
+        <p>15 PHP</p>
+        <button onclick="addToCart(2, 'Ballpen', 15, 'https://p.globalsources.com/IMAGES/PDT/B1188458161/ballpoint-pens.jpg')">Add to Cart</button>
+    </div>
+        <div class="product">
+    <img src="https://images.unsplash.com/photo-1587117266184-2fbb10ccc05e?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Marker">
+    <h3><a href="https://example.com/marker" target="_blank">Marker</a></h3>
+    <p>20 PHP</p>
+    <button onclick="addToCart(3, 'Marker', 20, 'https://images.unsplash.com/photo-1587117266184-2fbb10ccc05e?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">Add to Cart</button>
+</div>
+        <div class="product">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJIp0gCGXlvO4PkxE6K3_Td3ZyTrflQTlwxg&s" alt="Glue">
+    <h3><a href="https://example.com/glue" target="_blank">Glue</a></h3>
+    <p>18 PHP</p>
+    <button onclick="addToCart(4, 'Glue', 18, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJIp0gCGXlvO4PkxE6K3_Td3ZyTrflQTlwxg&s')">Add to Cart</button>
+</div>
+        <div class="product">
+    <img src="https://plus.unsplash.com/premium_photo-1669869388558-f7eb780f9af8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8d2F0ZXJjb2xvciUyMHN0YXRpb25hcnl8ZW58MHx8MHx8fDA%3D" alt="Watercolor">
+    <h3><a href="https://example.com/watercolor" target="_blank">Watercolor</a></h3>
+    <p>50 PHP</p>
+    <button onclick="addToCart(5, 'Watercolor', 50, 'https://plus.unsplash.com/premium_photo-1669869388558-f7eb780f9af8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8d2F0ZXJjb2xvciUyMHN0YXRpb25hcnl8ZW58MHx8MHx8fDA%3D')">Add to Cart</button>
+</div>
+        <div class="product">
+    <img src="https://i.pinimg.com/736x/44/a6/36/44a6364a195f0aebb1f3f30eb9ef07ae.jpg" alt="Liquid Eraser">
+    <h3><a href="https://example.com/liquid-eraser" target="_blank">Liquid Eraser</a></h3>
+    <p>12 PHP</p>
+    <button onclick="addToCart(6, 'Liquid Eraser', 12, 'https://i.pinimg.com/736x/44/a6/36/44a6364a195f0aebb1f3f30eb9ef07ae.jpg')">Add to Cart</button>
+</div>
+    </section>
+</body>
+</html>
+
+      <script src="script.js"></script>
+  </body>
+</html>
